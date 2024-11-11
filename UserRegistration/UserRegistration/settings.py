@@ -13,10 +13,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 import json
 from pathlib import Path
+from dotenv import load_dotenv ,find_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+success = load_dotenv(r"D:\github\ComiconUserRegistration\UserRegistration\my.env")
+print(f"ENV Loaded {success}")
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,22 +28,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # Load settings from JSON file
-with open(r"Q:\pipelines\zas_tools\workspaces\rishabh.g\firebase\settings.json") as f:
-    config = json.load(f)
 
 # Apply the JSON settings
-SECRET_KEY = config['SECRET_KEY']
-DEBUG = config['DEBUG']
-ALLOWED_HOSTS = config['ALLOWED_HOSTS']
-DATABASES = config['DATABASES']
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG') == 'True'
+ALLOWED_HOSTS = json.loads(os.getenv('ALLOWED_HOSTS', '[]'))
+DATABASES ={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "db.sqlite3"}}
 
-EMAIL_BACKEND = config['EMAIL_BACKEND']
-EMAIL_HOST = config['EMAIL_HOST']
-EMAIL_PORT = config['EMAIL_PORT']
-EMAIL_USE_TLS = config['EMAIL_USE_TLS']
-EMAIL_HOST_USER = config['EMAIL_HOST_USER']
-EMAIL_HOST_PASSWORD = config['EMAIL_HOST_PASSWORD']
-DEFAULT_FROM_EMAIL = config['DEFAULT_FROM_EMAIL']
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+FIREBASE_CONFIG = json.loads(os.getenv('FIREBASE_CONFIG', '{}'))
 
 # Other non-sensitive settings remain in settings.py
 INSTALLED_APPS = [
