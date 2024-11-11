@@ -131,7 +131,10 @@
         $(document).ready(function() {
             $('#registrationForm').on('submit', function(event) {
                 event.preventDefault();  // Prevent the default form submission
-
+        
+                // Disable the submit button to prevent multiple clicks
+                $('button[type="submit"]').prop('disabled', true);
+        
                 $.ajax({
                     type: 'POST',
                     url: $(this).attr('action'),
@@ -143,9 +146,13 @@
                         } else {
                             alert('Error: ' + response.message);
                         }
+                        // Enable the submit button again
+                        $('button[type="submit"]').prop('disabled', false);
                     },
                     error: function() {
                         alert('An error occurred. Please try again.');
+                        // Enable the submit button again if there's an error
+                        $('button[type="submit"]').prop('disabled', false);
                     }
                 });
             });

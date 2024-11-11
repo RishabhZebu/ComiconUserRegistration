@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .forms import UserRegistrationForm
+from django.template.loader import render_to_string
+from django.core.files.base import ContentFile
 import qrcode,json
 from django.core.mail import EmailMessage
 from django.conf import settings
 from io import BytesIO
-from django.core.files.base import ContentFile
+from email.mime.image import MIMEImage
 from .firebase_config import db  # Ensure this points to the Realtime Database
 
 def register(request):
@@ -71,6 +73,7 @@ def resend_qr_code(mobile_number, email):
     if existing_user:
         json_data = json.dumps(existing_user)
         print(f"Json Data is {json_data}")
+        
         # Generate QR code with the existing user data
         qr_data = json_data  # Adjust the data as needed
         qr = qrcode.make(qr_data)
@@ -81,15 +84,31 @@ def resend_qr_code(mobile_number, email):
 
         # Send the QR code via email
         email_subject = "Your Registration QR Code"
-        email_body = "Thank you for registering. Here is your QR code."
+        context = {
+            "qr_code_cid": "qr_code_image_cid",  # Reference to the CID in the email template
+        }
+        email_body = render_to_string('user_registration/template.html', context)
         email_message = EmailMessage(
             subject=email_subject,
             body=email_body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[email]
         )
-        email_message.attach(qr_code_file.name, qr_code_file.read(), 'image/png')
+        email_message.content_subtype = "html"  # Set the email content type to HTML
+
+        # Create the MIMEImage object and set the Content-ID header
+        buffer.seek(0)  # Reset buffer position
+        mime_image = MIMEImage(buffer.read(), _subtype='png') 
+        mime_image.add_header('Content-ID', '<qr_code_image_cid>')  # Content-ID header for inline image
+
+        # Attach the MIMEImage object to the email message
+        email_message.attach(mime_image)
+
+        # Send the email
         email_message.send()
-        
+
         return True
     return False
+
+def render_template(request):
+    return render(request, 'user_registration/template.html')

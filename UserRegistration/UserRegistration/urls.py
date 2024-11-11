@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.urls import path
 from .views import register
+from .views import render_template
 
 urlpatterns = [
     path('', register, name='register'),
+    path('template', render_template, name='template'),
 ]
 
