@@ -1,3 +1,4 @@
+
 """
 Django settings for UserRegistration project.
 
@@ -9,7 +10,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os,json
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6yv4&(=d^g2lh3i65ow=kn7fhqo2gjy#h63a6!er$-@7f^=$61'
+SECRET_KEY = 'django-insecure-8a4=o9ek395rowijp05^j$&&i)(z2zciy^#&b2!4jx84bl8stm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.190.11.111']
 
 
 # Application definition
@@ -37,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'UserRegistration',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,7 +57,7 @@ ROOT_URLCONF = 'UserRegistration.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,3 +124,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # For TLS
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rishabh.g@zebuanimation.com'
+EMAIL_HOST_PASSWORD = 'gemu wfuf iuex kkic'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
