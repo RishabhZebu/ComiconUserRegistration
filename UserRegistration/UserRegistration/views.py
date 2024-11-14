@@ -23,7 +23,7 @@ def register(request):
         existing_user = db.reference('users').child(mobile_number).get()
         if existing_user:
             # Resend the QR code if the user already exists
-            resend_qr_code(mobile_number, email)
+            resend_qr_code(request,mobile_number, email)
             return JsonResponse({'status': 'success', 'message': 'QR code resent to your email.'})
 
         # Create user entry in Firebase with mobile number as key
@@ -47,16 +47,29 @@ def register(request):
         buffer.seek(0)
         qr_code_file = ContentFile(buffer.read(), name=f"{mobile_number}_qr.png")
 
-        # Send the QR code via email
+                # Send the QR code via email
         email_subject = "Your Registration QR Code"
-        email_body = "Thank you for registering. Here is your QR code."
+        context = {
+            "qr_code_cid": "qr_code_image_cid",  # Reference to the CID in the email template
+        }
+        email_body = render_to_string('user_registration/template.html', context)
         email_message = EmailMessage(
             subject=email_subject,
             body=email_body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[email]
         )
-        email_message.attach(qr_code_file.name, qr_code_file.read(), 'image/png')
+        email_message.content_subtype = "html"  # Set the email content type to HTML
+
+        # Create the MIMEImage object and set the Content-ID header
+        buffer.seek(0)  # Reset buffer position
+        mime_image = MIMEImage(buffer.read(), _subtype='png') 
+        mime_image.add_header('Content-ID', '<qr_code_image_cid>')  # Content-ID header for inline image
+
+        # Attach the MIMEImage object to the email message
+        email_message.attach(mime_image)
+
+        # Send the email
         email_message.send()
 
         return JsonResponse({'status': 'success', 'message': 'Your registration QR code has been sent to your email!'})
@@ -66,13 +79,29 @@ def register(request):
     return render(request, 'user_registration/registration_form.html', {'form': form})
 
 
-def resend_qr_code(mobile_number, email):
+def resend_qr_code(request, mobile_number, email):
     # Retrieve user data from Firebase
-    existing_user = db.reference('users').child(mobile_number).get()
+    full_name = request.POST.get('full_name')
+    age = request.POST.get('age')
+    occupation = request.POST.get('occupation')
+    interests = request.POST.get('interests')
+    
+    user_ref = db.reference('users').child(mobile_number)
+    existing_user = user_ref.get()
 
     if existing_user:
-        json_data = json.dumps(existing_user)
-        print(f"Json Data is {json_data}")
+        # Update user data in Firebase
+        updated_data = {
+            "full_name": full_name or existing_user.get('full_name'),
+            "age": age or existing_user.get('age'),
+            "email": email or existing_user.get('email'),
+            "occupation": occupation or existing_user.get('occupation'),
+            "interests": interests or existing_user.get('interests'),
+        }
+        user_ref.update(updated_data)
+
+        json_data = json.dumps(updated_data)
+        print(f"Updated Json Data is {json_data}")
         
         # Generate QR code with the existing user data
         qr_data = json_data  # Adjust the data as needed
@@ -109,6 +138,7 @@ def resend_qr_code(mobile_number, email):
 
         return True
     return False
+
 
 def render_template(request):
     return render(request, 'user_registration/template.html')
