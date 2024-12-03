@@ -94,6 +94,7 @@ def resend_qr_code(request, mobile_number, email):
         updated_data = {
             "full_name": full_name or existing_user.get('full_name'),
             "age": age or existing_user.get('age'),
+            'mobile' : mobile_number or existing_user.get('mobile'),
             "email": email or existing_user.get('email'),
             "occupation": occupation or existing_user.get('occupation'),
             "interests": interests or existing_user.get('interests'),
